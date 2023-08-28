@@ -1,0 +1,11 @@
+name = "drone_controller"
+description = "Shiny new project"
+version = "0.1.0-dev"
+
+authors = ["Pedro Galvao"]
+maintainers = ["Pedro Galvao <pedroleitegalvao@gmail.com>"]
+maintainers-logins = ["pedrogalvao"]
+
+executables = ["drone_controller"]
+[[depends-on]]
+aws = "^23.0.0"
