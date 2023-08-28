@@ -1,14 +1,14 @@
-with "config/aws_server_config.gpr";
+with "config/drone_controller_config.gpr";
 project Drone_Controller is
 
    for Source_Dirs use ("src/", "config/");
-   for Object_Dir use "obj/" & Aws_Server_Config.Build_Profile;
+   for Object_Dir use "obj/" & Drone_Controller_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Exec_Dir use "bin";
    for Main use ("drone_controller.adb");
 
    package Compiler is
-      for Default_Switches ("Ada") use Aws_Server_Config.Ada_Compiler_Switches;
+      for Default_Switches ("Ada") use Drone_Controller_Config.Ada_Compiler_Switches;
    end Compiler;
 
    package Binder is
