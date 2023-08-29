@@ -28,9 +28,6 @@ package Drone_Control is
    timestamps : TimeVector.Vector;
    positions : Vec3Vector.Vector;
    speeds : Vec3Vector.Vector;
-   curr_time : Time := Clock;
-   speed : Vec3 := (X => 0.0, Y=> 0.0, Z => 0.0);
-   position : Vec3 := (X => 0.0, Y=> 0.0, Z => 0.0);
 
    function HW_CB (Request : AWS.Status.Data) return AWS.Response.Data;
 
