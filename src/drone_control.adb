@@ -2,6 +2,13 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body Drone_Control is
 
+
+function Calculate_Force (Position:Float; Speed: Float; Target_Position: Float) return Float is
+begin
+    return ((Target_Position - Position) - 0.5 * Speed);
+end Calculate_Force;
+
+
 function HW_CB (Request : AWS.Status.Data) return AWS.Response.Data is
     pragma Unreferenced (Request);
     Position_X : Float;
@@ -11,7 +18,12 @@ function HW_CB (Request : AWS.Status.Data) return AWS.Response.Data is
     Current_Speed : Vec3;
     Time_Interval : Float;
     Second_Last_Index : Natural;
+    Force_X : Float;
     Force_Y : Float;
+    Force_Z : Float;
+    Taget_X : Float := 10.0;
+    Taget_Y : Float := 10.0;
+    Taget_Z : Float := 10.0;
 begin
     
     Position_X := Float'Value (AWS.Parameters.Get (AWS.Status.Parameters (Request), "position_x"));
@@ -41,11 +53,21 @@ begin
     positions.Append(Current_Postition);
     speeds.Append(Current_Speed);
 
-    Put_Line ("Height: " & AWS.Parameters.Get (AWS.Status.Parameters (Request), "position_y"));
-    Force_Y := 9.81 + ((10.0 - Position_Y) - 2.0 * Current_Speed.Y);
-    Put_Line("Force_Y: " & Float'Image(Force_Y));
+    Put_Line ("X: " & AWS.Parameters.Get (AWS.Status.Parameters (Request), "position_x"));
+    Put_Line ("Y: " & AWS.Parameters.Get (AWS.Status.Parameters (Request), "position_y"));
+    Put_Line ("Z: " & AWS.Parameters.Get (AWS.Status.Parameters (Request), "position_z"));
 
-    return AWS.Response.Build ("text/json", "{ ""force"" :[0, " & Float'Image(Force_Y) & ", 0]}");
+    Force_X := Calculate_Force(Position_X, Current_Speed.X, 10.0);
+    Force_Y := 9.81 + Calculate_Force(Position_Y, Current_Speed.Y, 10.0);
+    Force_Z := Calculate_Force(Position_Z, Current_Speed.Z, 10.0);
+    Put_Line("Force_X: " & Float'Image(Force_X));
+    Put_Line("Force_Y: " & Float'Image(Force_Y));
+    Put_Line("Force_Z: " & Float'Image(Force_Z));
+
+    return AWS.Response.Build ("text/json", "{ ""force"" :[" 
+                                    & Float'Image(Force_X) & ", " 
+                                    & Float'Image(Force_Y) & ", " 
+                                    & Float'Image(Force_Z) & "]}");
 end HW_CB;
 
 end Drone_Control;

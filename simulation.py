@@ -46,7 +46,7 @@ class Simulation:
     def __init__(self):
         self.drone = Object()
         self.objects = [self.drone]
-        self.wind_speed = np.array([1, 0, 0])
+        self.wind_speed = np.array([0, 0, 0])
         self.gravity_acceleration = 9.81
         self.received_force = None
         self.quit = False
