@@ -3,6 +3,8 @@ import numpy as np
 import requests
 import pygame
 
+import threading
+
 # Initialize Pygame
 pygame.init()
 
@@ -46,6 +48,8 @@ class Simulation:
         self.objects = [self.drone]
         self.wind_speed = np.array([1, 0, 0])
         self.gravity_acceleration = 9.81
+        self.received_force = None
+        self.quit = False
 
     def update_positions(self, time_step):
         for obj in self.objects:
@@ -67,9 +71,9 @@ class Simulation:
             if obj.position[1] > 0:
                 wind_force = 0.05 * (self.wind_speed - obj.speed) * abs(self.wind_speed - obj.speed) 
                 obj.acceleration +=  np.array(wind_force / obj.weight, dtype=float)
-        received_force = send_recv_data(self.drone)
-        if received_force != None:
-            self.drone.acceleration =  self.drone.acceleration + np.array(received_force, dtype=float)
+        # drone force
+        if self.received_force != None:
+            self.drone.acceleration =  self.drone.acceleration + np.array(self.received_force, dtype=float)
 
     def floor_collision(self):
         for obj in self.objects:
@@ -79,9 +83,11 @@ class Simulation:
     def run(self):
         t1 = time.time()
         t2 = time.time()
-        while True:
+        print_time = t2
+        while not self.quit:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.quit = True
                     pygame.quit()
                     quit()
             time_step = (t2 - t1)
@@ -92,15 +98,29 @@ class Simulation:
             t1 = t2
             time.sleep(0.05)
             t2 = time.time()
-            
-            print("___________________________________________________")
-            print("time_step:", time_step)
-            print("position:", self.drone.position)
-            print("speed:", self.drone.speed)
-            print("acceleration:", self.drone.acceleration)
+            if t2 - print_time > 1:
+                print("___________________________________________________")
+                print("time_step:", time_step)
+                print("position:", self.drone.position)
+                print("speed:", self.drone.speed)
+                print("acceleration:", self.drone.acceleration)
+                print_time = t2
             
             screen.fill(white)  # Clear the screen
             pygame.draw.circle(screen, black, (window_width // 4 + int(30 * self.drone.position[0]), int(window_height - 30 * self.drone.position[1])), drone_size)
             pygame.display.update()
 
-Simulation().run()
+    def run_communication(self):
+        while not self.quit:
+            time.sleep(0.1)
+            self.received_force = send_recv_data(self.drone)
+
+
+sim = Simulation()
+t1 = threading.Thread(target=sim.run)
+t2 = threading.Thread(target=sim.run_communication)
+
+t1.start()
+t2.start()
+t1.join()
+t2.join()
