@@ -84,6 +84,7 @@ class Simulation:
         t1 = time.time()
         t2 = time.time()
         print_time = t2
+        frame_time = t2
         while not self.quit:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -95,6 +96,7 @@ class Simulation:
             self.update_positions(time_step)
             self.floor_collision()
             self.update_speeds(time_step)
+            self.change_wind()
             t1 = t2
             time.sleep(0.05)
             t2 = time.time()
@@ -104,11 +106,20 @@ class Simulation:
                 print("position:", self.drone.position)
                 print("speed:", self.drone.speed)
                 print("acceleration:", self.drone.acceleration)
+                print("wind_speed:", self.wind_speed)
                 print_time = t2
-            
-            screen.fill(white)  # Clear the screen
-            pygame.draw.circle(screen, black, (window_width // 4 + int(30 * self.drone.position[0]), int(window_height - 30 * self.drone.position[1])), drone_size)
-            pygame.display.update()
+            if t2 - frame_time > 0.1:
+                screen.fill(white)  # Clear the screen
+                drone_repr_size = drone_size * 1/(1 + 0.1*self.drone.position[0])
+                pygame.draw.circle(screen, black, (window_width // 4 + int(30 * self.drone.position[0]), int(window_height - 30 * self.drone.position[1])), drone_repr_size)
+                pygame.display.update()
+                frame_time = t2
+
+    def change_wind(self):
+        if np.random.uniform(0,1) > 0.7:
+            self.wind_speed = self.wind_speed + np.array([np.random.normal(0,0.1), np.random.normal(0,0.1), np.random.normal(0,0.1)], dtype=float)
+        if np.random.uniform(0,1) > 0.98:
+            self.wind_speed = np.array([np.random.normal(0,1), np.random.normal(0,0.5), np.random.normal(0,1)], dtype=float)
 
     def run_communication(self):
         while not self.quit:
